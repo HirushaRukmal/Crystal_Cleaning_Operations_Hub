@@ -1,0 +1,23 @@
+name: Generate recurring Crystal Cleaning invoices
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 0 * * *' # 10am AEST / 11am AEDT, every day
+permissions:
+  contents: read
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger billing (secrets never echoed)
+        env:
+          APP_URL: ${{ secrets.CRYSTAL_APP_URL }}
+          JOB_TOKEN: ${{ secrets.CRYSTAL_BILLING_JOB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$APP_URL" && test -n "$JOB_TOKEN"
+          curl --fail --silent --show-error --retry 3 --retry-delay 15 \
+            --connect-timeout 20 --max-time 150 --request POST \
+            --header "X-Billing-Job-Token: $JOB_TOKEN" \
+            "${APP_URL%/}/api/jobs/recurring"

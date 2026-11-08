@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: crystal-cleaning-operations-hub
+    runtime: python
+    plan: free
+    buildCommand: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+    startCommand: python -m alembic upgrade head && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: HOSTED_MODE
+        value: '1'
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: SETUP_TOKEN
+        sync: false
+      - key: BILLING_JOB_TOKEN
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: ENABLE_AUTOMATED_EMAIL
+        value: 'false'
